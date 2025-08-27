@@ -19,11 +19,88 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def setup_db():
+    with get_db() as conn:
+        # Create all tables if they do not exist
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "products" (
+                "product_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "name" TEXT NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "prices_history" (
+                "price_history_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "product_id" INTEGER,
+                "time" INTEGER,
+                "price" REAL,
+                FOREIGN KEY("product_id") REFERENCES "products"("product_id")
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "warehouses" (
+                "warehouses_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "name" TEXT NOT NULL,
+                "address" TEXT NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "inventory" (
+                "inventory_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "product_id" INTEGER,
+                "warehouse_id" INTEGER,
+                "full_qty" INTEGER,
+                "empty_qty" INTEGER,
+                "updated_at" INTEGER,
+                FOREIGN KEY("product_id") REFERENCES "products"("product_id"),
+                FOREIGN KEY("warehouse_id") REFERENCES "warehouses"("warehouses_id")
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "staffs" (
+                "staff_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "name" TEXT,
+                "phone" TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "customers" (
+                "customer_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "name" TEXT,
+                "phone" TEXT,
+                "address" TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "orders" (
+                "order_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "customer_id" INTEGER,
+                "staff_id" INTEGER,
+                "full_price" REAL,
+                "created_at" INTEGER,
+                FOREIGN KEY("customer_id") REFERENCES "customers"("customer_id"),
+                FOREIGN KEY("staff_id") REFERENCES "staffs"("staff_id")
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS "order_detail" (
+                "order_detail_id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "order_id" INTEGER,
+                "inventory_id" INTEGER,
+                "number" INTEGER,
+                "time" INTEGER,
+                "price_history_id" INTEGER,
+                FOREIGN KEY("order_id") REFERENCES "orders"("order_id"),
+                FOREIGN KEY("inventory_id") REFERENCES "inventory"("inventory_id"),
+                FOREIGN KEY("price_history_id") REFERENCES "prices_history"("price_history_id")
+            )
+        """)
+        conn.commit()
+
 # --- Routes cho Dashboard chính (GET) ---
 @app.route('/')
 def index():
     with get_db() as conn:
-        # Fetch all data for the dashboard
         products = conn.execute("SELECT * FROM products").fetchall()
         warehouses = conn.execute("SELECT * FROM warehouses").fetchall()
         staffs = conn.execute("SELECT * FROM staffs").fetchall()
@@ -32,8 +109,8 @@ def index():
         inventory = conn.execute("""
             SELECT 
                 i.inventory_id,
-                p.name AS name,
-                w.name AS name,
+                p.name AS product_name,
+                w.name AS warehouse_name,
                 i.full_qty,
                 i.empty_qty,
                 i.updated_at
@@ -45,35 +122,43 @@ def index():
         orders = conn.execute("""
             SELECT
                 o.order_id,
-                c.name AS name,
-                s.name AS name,
+                c.name AS customer_name,
+                s.name AS staff_name,
                 o.full_price,
-                od.order_detail_id
+                o.created_at
             FROM orders o
             JOIN customers c ON o.customer_id = c.customer_id
             JOIN staffs s ON o.staff_id = s.staff_id
-            JOIN order_detail od ON od.order_detail_id = o.order_detail_id
             ORDER BY o.order_id DESC
         """).fetchall()
+
+        prices_history = conn.execute("""
+            SELECT
+                ph.price_history_id,
+                p.name AS product_name,
+                ph.price,
+                ph.time
+            FROM prices_history ph
+            JOIN products p ON ph.product_id = p.product_id
+            ORDER BY ph.time DESC
+        """).fetchall()
     
-    return render_template("index.html", products=products, warehouses=warehouses, inventory=inventory, staffs=staffs, customers=customers, orders=orders)
+    return render_template("index.html", products=products, warehouses=warehouses, inventory=inventory, staffs=staffs, customers=customers, orders=orders, prices_history=prices_history)
 
 # --- Routes cho Sản phẩm ---
 @app.route('/add_product', methods=["POST"])
 def add_product():
     name = request.form["name"]
-    price = request.form["price"]
     with get_db() as conn:
-        conn.execute("INSERT INTO products (name, price) VALUES (?, ?)", (name, price))
+        conn.execute("INSERT INTO products (name) VALUES (?)", (name,))
         conn.commit()
     return redirect("/")
 
 @app.route('/edit_product/<int:product_id>', methods=["POST"])
 def edit_product(product_id):
     name = request.form["name"]
-    price = request.form["price"]
     with get_db() as conn:
-        conn.execute("UPDATE products SET name = ?, price = ? WHERE product_id = ?", (name, price, product_id))
+        conn.execute("UPDATE products SET name = ? WHERE product_id = ?", (name, product_id))
         conn.commit()
     return redirect("/")
 
@@ -83,6 +168,16 @@ def delete_product(product_id):
         conn.execute("DELETE FROM products WHERE product_id = ?", (product_id,))
         conn.commit()
     return redirect("/")
+
+@app.route('/add_price_history/<int:product_id>', methods=["POST"])
+def add_price_history(product_id):
+    price = request.form["price"]
+    current_time = int(time.time())
+    with get_db() as conn:
+        conn.execute("INSERT INTO prices_history (product_id, price, time) VALUES (?, ?, ?)", (product_id, price, current_time))
+        conn.commit()
+    return redirect("/")
+
 
 # --- Routes cho Kho hàng (Warehouses) ---
 @app.route('/add_warehouse', methods=["POST"])
@@ -176,26 +271,52 @@ def delete_staff(staff_id):
 def add_order():
     customer_id = request.form["customer_id"]
     staff_id = request.form["staff_id"]
-    full_price = request.form["full_price"]
-    created_at = int(time.time())
     
     with get_db() as conn:
+        # Step 1: Insert new order
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO orders (customer_id, staff_id, full_price) VALUES (?, ?, ?, ?)", (customer_id, staff_id, full_price, created_at))
+        cursor.execute("INSERT INTO orders (customer_id, staff_id, full_price, created_at) VALUES (?, ?, ?, ?)", (customer_id, staff_id, 0, int(time.time())))
         order_id = cursor.lastrowid
+
+        # Step 2: Handle product details and total price
+        product_ids = request.form.getlist("product_id[]")
+        numbers = request.form.getlist("number[]")
+        prices = request.form.getlist("price[]")
         
-        # Thêm chi tiết đơn hàng
-        product_id = request.form["product_id"]
-        number = request.form["number"]
-        
-        # Lấy inventory_id từ product_id
-        inventory_id = cursor.execute("SELECT inventory_id FROM inventory WHERE product_id = ?", (product_id,)).fetchone()
-        
-        if inventory_id:
-            cursor.execute("INSERT INTO order_detail (order_id, inventory_id, number, time) VALUES (?, ?, ?, ?)", (order_id, inventory_id['inventory_id'], number, created_at))
-        
+        total_price = 0
+        for i in range(len(product_ids)):
+            product_id = product_ids[i]
+            number = int(numbers[i])
+            price = float(prices[i])
+
+            # Get the inventory_id for the product
+            inventory_row = cursor.execute("SELECT inventory_id FROM inventory WHERE product_id = ?", (product_id,)).fetchone()
+            if inventory_row:
+                inventory_id = inventory_row['inventory_id']
+                
+                # Insert price into prices_history
+                cursor.execute("INSERT INTO prices_history (product_id, price, time) VALUES (?, ?, ?)", (product_id, price, int(time.time())))
+                price_history_id = cursor.lastrowid
+                
+                # Insert order detail
+                cursor.execute("INSERT INTO order_detail (order_id, inventory_id, number, time, price_history_id) VALUES (?, ?, ?, ?, ?)", (order_id, inventory_id, number, int(time.time()), price_history_id))
+                
+                total_price += number * price
+
+        # Step 3: Update the order with the final total price
+        cursor.execute("UPDATE orders SET full_price = ? WHERE order_id = ?", (total_price, order_id))
+
+        conn.commit()
+    return redirect("/")
+
+@app.route('/delete_order/<int:order_id>', methods=["POST"])
+def delete_order(order_id):
+    with get_db() as conn:
+        conn.execute("DELETE FROM order_detail WHERE order_id = ?", (order_id,))
+        conn.execute("DELETE FROM orders WHERE order_id = ?", (order_id,))
         conn.commit()
     return redirect("/")
 
 if __name__ == "__main__":
+    setup_db()
     app.run(debug=True)
