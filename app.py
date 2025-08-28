@@ -273,8 +273,9 @@ def add_order():
     staff_id = request.form["staff_id"]
     
     with get_db() as conn:
-        # Step 1: Insert new order
         cursor = conn.cursor()
+        
+        # Step 1: Insert new order
         cursor.execute("INSERT INTO orders (customer_id, staff_id, full_price, created_at) VALUES (?, ?, ?, ?)", (customer_id, staff_id, 0, int(time.time())))
         order_id = cursor.lastrowid
 
@@ -284,28 +285,39 @@ def add_order():
         prices = request.form.getlist("price[]")
         
         total_price = 0
+
         for i in range(len(product_ids)):
             product_id = product_ids[i]
             number = int(numbers[i])
             price = float(prices[i])
 
-            # Get the inventory_id for the product
-            inventory_row = cursor.execute("SELECT inventory_id FROM inventory WHERE product_id = ?", (product_id,)).fetchone()
+            # Get the inventory_id, full_qty, and empty_qty for the product
+            inventory_row = cursor.execute("SELECT inventory_id, full_qty, empty_qty FROM inventory WHERE product_id = ?", (product_id,)).fetchone()
+            
             if inventory_row:
                 inventory_id = inventory_row['inventory_id']
+                current_qty = inventory_row['full_qty']
+                current_empty_qty = int(inventory_row['empty_qty'])
                 
                 # Insert price into prices_history
                 cursor.execute("INSERT INTO prices_history (product_id, price, time) VALUES (?, ?, ?)", (product_id, price, int(time.time())))
                 price_history_id = cursor.lastrowid
-                
+
                 # Insert order detail
                 cursor.execute("INSERT INTO order_detail (order_id, inventory_id, number, time, price_history_id) VALUES (?, ?, ?, ?, ?)", (order_id, inventory_id, number, int(time.time()), price_history_id))
                 
                 total_price += number * price
+                
+                # Tính toán số lượng mới
+                new_qty = current_qty - number
+                new_empty_qty = current_empty_qty + number
+                
+                # Cập nhật cả hai cột full_qty và empty_qty trong bảng tồn kho
+                # Lỗi đã được sửa: Thay "AND" bằng dấu phẩy "," và dùng biến "new_empty_qty" đã được tính toán
+                cursor.execute("UPDATE inventory SET full_qty = ?, empty_qty = ? WHERE inventory_id = ?", (new_qty, new_empty_qty, inventory_id))
 
         # Step 3: Update the order with the final total price
         cursor.execute("UPDATE orders SET full_price = ? WHERE order_id = ?", (total_price, order_id))
-
         conn.commit()
     return redirect("/")
 
