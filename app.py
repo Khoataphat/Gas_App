@@ -292,30 +292,50 @@ def add_order():
             price = float(prices[i])
 
             # Get the inventory_id, full_qty, and empty_qty for the product
-            inventory_row = cursor.execute("SELECT inventory_id, full_qty, empty_qty FROM inventory WHERE product_id = ?", (product_id,)).fetchone()
-            
+            inventory_row = cursor.execute("SELECT i.inventory_id, i.full_qty, i.empty_qty, p.type FROM inventory i JOIN products p ON i.product_id = p.product_id WHERE i.product_id = ?", (product_id,)).fetchone()
+            # BƯỚC MỚI: Kiểm tra giá trong tháng hiện tại
+            check_price_row = cursor.execute("""
+                    SELECT price 
+                    FROM prices_history 
+                    WHERE product_id = ? 
+                    AND strftime('%Y-%m', time, 'unixepoch') = strftime('%Y-%m', 'now')
+                    ORDER BY time DESC 
+                    LIMIT 1
+                """, (product_id,)).fetchone()
+
             if inventory_row:
                 inventory_id = inventory_row['inventory_id']
                 current_qty = inventory_row['full_qty']
-                current_empty_qty = int(inventory_row['empty_qty'])
+                current_empty_qty = inventory_row['empty_qty']
+                product_type = inventory_row['type']
                 
-                # Insert price into prices_history
-                cursor.execute("INSERT INTO prices_history (product_id, price, time) VALUES (?, ?, ?)", (product_id, price, int(time.time())))
-                price_history_id = cursor.lastrowid
+                # So sánh và chèn giá
+                price_history_id = None
+                # Nếu chưa có giá nào trong tháng hoặc giá hiện tại khác với giá cũ nhất
+                if check_price_row is None or check_price_row['price'] != price:
+                    # Insert giá mới
+                    cursor.execute("INSERT INTO prices_history (product_id, price, time) VALUES (?, ?, ?)", (product_id, price, int(time.time())))
+                    price_history_id = cursor.lastrowid
+                """else:
+                    # Nếu giá không đổi, lấy ID của bản ghi giá hiện có
+                    price_history_id = cursor.execute("SELECT price_history_id FROM prices_history WHERE product_id = ? ORDER BY time DESC LIMIT 1", (product_id,)).fetchone()['price_history_id']"""
 
                 # Insert order detail
                 cursor.execute("INSERT INTO order_detail (order_id, inventory_id, number, time, price_history_id) VALUES (?, ?, ?, ?, ?)", (order_id, inventory_id, number, int(time.time()), price_history_id))
                 
                 total_price += number * price
                 
-                # Tính toán số lượng mới
-                new_qty = current_qty - number
-                new_empty_qty = current_empty_qty + number
-                
-                # Cập nhật cả hai cột full_qty và empty_qty trong bảng tồn kho
-                # Lỗi đã được sửa: Thay "AND" bằng dấu phẩy "," và dùng biến "new_empty_qty" đã được tính toán
-                cursor.execute("UPDATE inventory SET full_qty = ?, empty_qty = ? WHERE inventory_id = ?", (new_qty, new_empty_qty, inventory_id))
-
+                if product_type == 'Gas':
+                    # Tính toán số lượng mới
+                    new_qty = current_qty - number
+                    new_empty_qty = current_empty_qty + number
+                    
+                    # Cập nhật cả hai cột full_qty và empty_qty trong bảng tồn kho
+                    # Lỗi đã được sửa: Thay "AND" bằng dấu phẩy "," và dùng biến "new_empty_qty" đã được tính toán
+                    cursor.execute("UPDATE inventory SET full_qty = ?, empty_qty = ? WHERE inventory_id = ?", (new_qty, new_empty_qty, inventory_id))
+                else: # Áp dụng cho bếp gas, phụ kiện...
+                    new_full_qty = current_qty - number
+                    cursor.execute("UPDATE inventory SET full_qty = ? WHERE inventory_id = ?", (new_full_qty, inventory_id))
         # Step 3: Update the order with the final total price
         cursor.execute("UPDATE orders SET full_price = ? WHERE order_id = ?", (total_price, order_id))
         conn.commit()
