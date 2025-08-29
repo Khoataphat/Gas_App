@@ -341,6 +341,46 @@ def add_order():
         conn.commit()
     return redirect("/")
 
+@app.route('/api/order_details/<int:order_id>')
+def api_order_details(order_id):
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        order = cursor.execute("""
+            SELECT
+                o.order_id,
+                o.full_price,
+                o.created_at,
+                c.name AS customer_name,
+                s.name AS staff_name
+            FROM orders o
+            JOIN customers c ON o.customer_id = c.customer_id
+            JOIN staffs s ON o.staff_id = s.staff_id
+            WHERE o.order_id = ?
+        """, (order_id,)).fetchone()
+
+        if order is None:
+            return jsonify({"error": "Order not found"}), 404
+
+        products = cursor.execute("""
+            SELECT
+                od.number,
+                p.name AS product_name,
+                ph.price AS unit_price
+            FROM order_detail od
+            JOIN inventory i ON od.inventory_id = i.inventory_id
+            JOIN products p ON i.product_id = p.product_id
+            LEFT JOIN prices_history ph ON od.price_history_id = ph.price_history_id
+            WHERE od.order_id = ?
+        """, (order_id,)).fetchall()
+
+        products_list = [dict(p) for p in products]
+
+        return jsonify({
+            "order": dict(order),
+            "products": products_list
+        })
+
 @app.route('/delete_order/<int:order_id>', methods=["POST"])
 def delete_order(order_id):
     with get_db() as conn:

@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Gas Business Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    function addProductRow() {
-        const productSelect = document.getElementById('product-select').innerHTML;
-        const container = document.getElementById('product-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 items-center mb-4';
-        newRow.innerHTML = `
-            <select name="product_id[]" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none">
+    <title>Gas Business Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function addProductRow() {
+            const productSelect = document.getElementById('product-select').innerHTML;
+            const container = document.getElementById('product-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 items-center mb-4';
+            newRow.innerHTML = `
+            <select name="product_id[]" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
                 ${productSelect}
             </select>
-            <input type="number" name="number[]" placeholder="Quantity" class="px-4 py-2 border rounded-lg focus:outline-none">
-            <input type="number" name="price[]" step="0.01" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none">
+            <input type="number" name="number[]" placeholder="Quantity" class="px-4 py-2 border rounded-lg focus:outline-none" required>
+            <input type="number" name="price[]" step="0.01" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none" required>
             <button type="button" onclick="this.parentNode.remove()" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Remove</button>
         `;
-        container.appendChild(newRow);
-    }
-  </script>
+            container.appendChild(newRow);
+        }
+    </script>
+    <style>
+        .detail-row {
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .detail-row.open {
+            max-height: 500px; /* Adjust this value as needed to fit content */
+        }
+    </style>
 </head>
+
 <body class="bg-gray-100 font-sans antialiased">
     <div class="flex min-h-screen">
         <div class="w-64 bg-gray-800 text-white flex flex-col p-4 shadow-lg">
@@ -28,37 +41,44 @@
             <nav class="flex-1">
                 <ul class="space-y-2">
                     <li>
-                        <a href="#products" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#products"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Product Management</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#prices" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#prices"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Prices History</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#warehouses" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#warehouses"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Warehouse Management</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#inventory" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#inventory"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Inventory Management</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#customers" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#customers"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Customer Management</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#staffs" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#staffs"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Staff Management</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#orders" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <a href="#orders"
+                            class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
                             <span class="ml-2">Order Management</span>
                         </a>
                     </li>
@@ -68,14 +88,19 @@
 
         <div class="flex-1 p-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Gas Business Dashboard</h1>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="space-y-8">
                     <div id="products" class="bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-3xl font-bold text-gray-800 mb-6">Product Management</h2>
-                        <form method="POST" action="/add_product" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
-                            <input type="text" name="name" placeholder="Product Name" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
-                            <button type="submit" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
+                        <form method="POST" action="/add_product"
+                            class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
+                            <input type="text" name="name" placeholder="Product Name"
+                                class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
+                            <input type="text" name="type" placeholder="Product Type (Gas/Other)"
+                                class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
+                            <button type="submit"
+                                class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
                         </form>
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -83,33 +108,40 @@
                                     <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                         <th class="py-3 px-6 text-left">ID</th>
                                         <th class="py-3 px-6 text-left">Name</th>
+                                        <th class="py-3 px-6 text-left">Type</th>
                                         <th class="py-3 px-6 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-gray-600 text-sm font-light">
                                     {% for p in products %}
-                                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6">{{ p['product_id'] }}</td>
-                                            <td class="py-3 px-6">{{ p['name'] }}</td>
-                                            <td class="py-3 px-6 text-center">
-                                                <div class="flex justify-center space-x-2">
-                                                    <form method="POST" action="/edit_product/{{ p['product_id'] }}" class="inline-block">
-                                                        <input type="text" name="name" value="{{ p['name'] }}" hidden>
-                                                        <button type="submit" class="bg-yellow-500 text-white py-1 px-3 rounded-lg hover:bg-yellow-600">Edit</button>
-                                                    </form>
-                                                    <form method="POST" action="/delete_product/{{ p['product_id'] }}" class="inline-block" onsubmit="return confirm('Delete this product?');">
-                                                        <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="py-3 px-6">{{ p['product_id'] }}</td>
+                                        <td class="py-3 px-6">{{ p['name'] }}</td>
+                                        <td class="py-3 px-6">{{ p['type'] }}</td>
+                                        <td class="py-3 px-6 text-center">
+                                            <div class="flex justify-center space-x-2">
+                                                <form method="POST" action="/edit_product/{{ p['product_id'] }}"
+                                                    class="inline-block">
+                                                    <input type="text" name="name" value="{{ p['name'] }}" hidden>
+                                                    <button type="submit"
+                                                        class="bg-yellow-500 text-white py-1 px-3 rounded-lg hover:bg-yellow-600">Edit</button>
+                                                </form>
+                                                <form method="POST" action="/delete_product/{{ p['product_id'] }}"
+                                                    class="inline-block"
+                                                    onsubmit="return confirm('Delete this product?');">
+                                                    <button type="submit"
+                                                        class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            
+
                 <div class="space-y-8">
                     <div id="prices" class="bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-3xl font-bold text-gray-800 mb-6">Prices History</h2>
@@ -125,25 +157,29 @@
                                 </thead>
                                 <tbody class="text-gray-600 text-sm font-light">
                                     {% for ph in prices_history %}
-                                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6">{{ ph['price_history_id'] }}</td>
-                                            <td class="py-3 px-6">{{ ph['product_name'] }}</td>
-                                            <td class="py-3 px-6">{{ ph['price'] }}</td>
-                                            <td class="py-3 px-6">{{ ph['time'] | strftime }}</td>
-                                        </tr>
+                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="py-3 px-6">{{ ph['price_history_id'] }}</td>
+                                        <td class="py-3 px-6">{{ ph['product_name'] }}</td>
+                                        <td class="py-3 px-6">{{ ph['price'] }}</td>
+                                        <td class="py-3 px-6">{{ ph['time'] | strftime }}</td>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            
+
                 <div id="warehouses" class="bg-white p-6 rounded-lg shadow-md mt-8 lg:col-span-2">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Warehouse Management</h2>
-                    <form method="POST" action="/add_warehouse" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
-                        <input type="text" name="name" placeholder="Warehouse Name" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
-                        <input type="text" name="address" placeholder="Address" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
-                        <button type="submit" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
+                    <form method="POST" action="/add_warehouse"
+                        class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
+                        <input type="text" name="name" placeholder="Warehouse Name"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
+                        <input type="text" name="address" placeholder="Address"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
+                        <button type="submit"
+                            class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
                     </form>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -157,47 +193,58 @@
                             </thead>
                             <tbody class="text-gray-600 text-sm font-light">
                                 {% for w in warehouses %}
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        <td class="py-3 px-6">{{ w['warehouses_id'] }}</td>
-                                        <td class="py-3 px-6">{{ w['name'] }}</td>
-                                        <td class="py-3 px-6">{{ w['address'] }}</td>
-                                        <td class="py-3 px-6 text-center">
-                                            <div class="flex justify-center space-x-2">
-                                                <form method="POST" action="/edit_warehouse/{{ w['warehouses_id'] }}" class="inline-block">
-                                                    <input type="text" name="name" value="{{ w['name'] }}" hidden>
-                                                    <input type="text" name="address" value="{{ w['address'] }}" hidden>
-                                                    <button type="submit" class="bg-yellow-500 text-white py-1 px-3 rounded-lg hover:bg-yellow-600">Edit</button>
-                                                </form>
-                                                <form method="POST" action="/delete_warehouse/{{ w['warehouses_id'] }}" class="inline-block" onsubmit="return confirm('Delete this warehouse?');">
-                                                    <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">{{ w['warehouses_id'] }}</td>
+                                    <td class="py-3 px-6">{{ w['name'] }}</td>
+                                    <td class="py-3 px-6">{{ w['address'] }}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <div class="flex justify-center space-x-2">
+                                            <form method="POST" action="/edit_warehouse/{{ w['warehouses_id'] }}"
+                                                class="inline-block">
+                                                <input type="text" name="name" value="{{ w['name'] }}" hidden>
+                                                <input type="text" name="address" value="{{ w['address'] }}" hidden>
+                                                <button type="submit"
+                                                    class="bg-yellow-500 text-white py-1 px-3 rounded-lg hover:bg-yellow-600">Edit</button>
+                                            </form>
+                                            <form method="POST" action="/delete_warehouse/{{ w['warehouses_id'] }}"
+                                                class="inline-block"
+                                                onsubmit="return confirm('Delete this warehouse?');">
+                                                <button type="submit"
+                                                    class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            
+
                 <div id="inventory" class="bg-white p-6 rounded-lg shadow-md mt-8 lg:col-span-2">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h2>
-                    <form method="POST" action="/add_inventory" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <select name="product_id" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none">
+                    <form method="POST" action="/add_inventory"
+                        class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <select name="product_id"
+                            class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none">
                             <option value="">-- Select Product --</option>
                             {% for p in products %}
-                                <option value="{{ p['product_id'] }}">{{ p['name'] }}</option>
+                            <option value="{{ p['product_id'] }}">{{ p['name'] }}</option>
                             {% endfor %}
                         </select>
-                        <select name="warehouse_id" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none">
+                        <select name="warehouse_id"
+                            class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none">
                             <option value="">-- Select Warehouse --</option>
                             {% for w in warehouses %}
-                                <option value="{{ w['warehouses_id'] }}">{{ w['name'] }}</option>
+                            <option value="{{ w['warehouses_id'] }}">{{ w['name'] }}</option>
                             {% endfor %}
                         </select>
-                        <input type="number" name="full_qty" placeholder="Full Qty" class="px-4 py-2 border rounded-lg focus:outline-none">
-                        <input type="number" name="empty_qty" placeholder="Empty Qty" class="px-4 py-2 border rounded-lg focus:outline-none">
-                        <button type="submit" class="col-span-1 md:col-span-4 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add/Update</button>
+                        <input type="number" name="full_qty" placeholder="Full Qty"
+                            class="px-4 py-2 border rounded-lg focus:outline-none">
+                        <input type="number" name="empty_qty" placeholder="Empty Qty"
+                            class="px-4 py-2 border rounded-lg focus:outline-none">
+                        <button type="submit"
+                            class="col-span-1 md:col-span-4 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add/Update</button>
                     </form>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -214,32 +261,40 @@
                             </thead>
                             <tbody class="text-gray-600 text-sm font-light">
                                 {% for i in inventory %}
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        <td class="py-3 px-6">{{ i['inventory_id'] }}</td>
-                                        <td class="py-3 px-6">{{ i['product_name'] }}</td>
-                                        <td class="py-3 px-6">{{ i['warehouse_name'] }}</td>
-                                        <td class="py-3 px-6">{{ i['full_qty'] }}</td>
-                                        <td class="py-3 px-6">{{ i['empty_qty'] }}</td>
-                                        <td class="py-3 px-6">{{ i['updated_at'] | strftime }}</td>
-                                        <td class="py-3 px-6 text-center">
-                                            <form method="POST" action="/delete_inventory/{{ i['inventory_id'] }}" class="inline-block" onsubmit="return confirm('Delete this inventory record?');">
-                                                <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">{{ i['inventory_id'] }}</td>
+                                    <td class="py-3 px-6">{{ i['product_name'] }}</td>
+                                    <td class="py-3 px-6">{{ i['warehouse_name'] }}</td>
+                                    <td class="py-3 px-6">{{ i['full_qty'] }}</td>
+                                    <td class="py-3 px-6">{{ i['empty_qty'] }}</td>
+                                    <td class="py-3 px-6">{{ i['updated_at'] | strftime }}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <form method="POST" action="/delete_inventory/{{ i['inventory_id'] }}"
+                                            class="inline-block"
+                                            onsubmit="return confirm('Delete this inventory record?');">
+                                            <button type="submit"
+                                                class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            
+
                 <div id="customers" class="bg-white p-6 rounded-lg shadow-md mt-8 lg:col-span-2">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Customer Management</h2>
-                    <form method="POST" action="/add_customer" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
-                        <input type="text" name="name" placeholder="Name" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
-                        <input type="text" name="phone" placeholder="Phone" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
-                        <input type="text" name="address" placeholder="Address" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
-                        <button type="submit" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
+                    <form method="POST" action="/add_customer"
+                        class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
+                        <input type="text" name="name" placeholder="Name"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
+                        <input type="text" name="phone" placeholder="Phone"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
+                        <input type="text" name="address" placeholder="Address"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
+                        <button type="submit"
+                            class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
                     </form>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -254,29 +309,35 @@
                             </thead>
                             <tbody class="text-gray-600 text-sm font-light">
                                 {% for c in customers %}
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        <td class="py-3 px-6">{{ c['customer_id'] }}</td>
-                                        <td class="py-3 px-6">{{ c['name'] }}</td>
-                                        <td class="py-3 px-6">{{ c['phone'] }}</td>
-                                        <td class="py-3 px-6">{{ c['address'] }}</td>
-                                        <td class="py-3 px-6 text-center">
-                                            <form method="POST" action="/delete_customer/{{ c['customer_id'] }}" class="inline-block" onsubmit="return confirm('Delete this customer?');">
-                                                <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">{{ c['customer_id'] }}</td>
+                                    <td class="py-3 px-6">{{ c['name'] }}</td>
+                                    <td class="py-3 px-6">{{ c['phone'] }}</td>
+                                    <td class="py-3 px-6">{{ c['address'] }}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <form method="POST" action="/delete_customer/{{ c['customer_id'] }}"
+                                            class="inline-block" onsubmit="return confirm('Delete this customer?');">
+                                            <button type="submit"
+                                                class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            
+
                 <div id="staffs" class="bg-white p-6 rounded-lg shadow-md mt-8 lg:col-span-2">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Staff Management</h2>
-                    <form method="POST" action="/add_staff" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
-                        <input type="text" name="name" placeholder="Name" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
-                        <input type="text" name="phone" placeholder="Phone" class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
-                        <button type="submit" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
+                    <form method="POST" action="/add_staff"
+                        class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner flex space-x-4">
+                        <input type="text" name="name" placeholder="Name"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none" required>
+                        <input type="text" name="phone" placeholder="Phone"
+                            class="flex-grow px-4 py-2 border rounded-lg focus:outline-none">
+                        <button type="submit"
+                            class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600">Add</button>
                     </form>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -290,60 +351,73 @@
                             </thead>
                             <tbody class="text-gray-600 text-sm font-light">
                                 {% for s in staffs %}
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        <td class="py-3 px-6">{{ s['staff_id'] }}</td>
-                                        <td class="py-3 px-6">{{ s['name'] }}</td>
-                                        <td class="py-3 px-6">{{ s['phone'] }}</td>
-                                        <td class="py-3 px-6 text-center">
-                                            <form method="POST" action="/delete_staff/{{ s['staff_id'] }}" class="inline-block" onsubmit="return confirm('Delete this staff?');">
-                                                <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">{{ s['staff_id'] }}</td>
+                                    <td class="py-3 px-6">{{ s['name'] }}</td>
+                                    <td class="py-3 px-6">{{ s['phone'] }}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <form method="POST" action="/delete_staff/{{ s['staff_id'] }}"
+                                            class="inline-block" onsubmit="return confirm('Delete this staff?');">
+                                            <button type="submit"
+                                                class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            
+
             </div>
-            
+
             <div id="orders" class="bg-white p-6 rounded-lg shadow-md mt-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-6">Order Management</h2>
-            
-                <form method="POST" action="/add_order" class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <select name="customer_id" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
+
+                <form method="POST" action="/add_order"
+                    class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <select name="customer_id"
+                        class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
                         <option value="">-- Select Customer --</option>
                         {% for c in customers %}
-                            <option value="{{ c['customer_id'] }}">{{ c['name'] }}</option>
+                        <option value="{{ c['customer_id'] }}">{{ c['name'] }}</option>
                         {% endfor %}
                     </select>
-                    <select name="staff_id" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
+                    <select name="staff_id"
+                        class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
                         <option value="">-- Select Staff --</option>
                         {% for s in staffs %}
-                            <option value="{{ s['staff_id'] }}">{{ s['name'] }}</option>
+                        <option value="{{ s['staff_id'] }}">{{ s['name'] }}</option>
                         {% endfor %}
                     </select>
-                    
+
                     <div id="product-container" class="col-span-1 md:col-span-4 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                            <select id="product-select" name="product_id[]" class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none" required>
+                            <select id="product-select" name="product_id[]"
+                                class="col-span-1 md:col-span-2 px-4 py-2 border rounded-lg focus:outline-none"
+                                required>
                                 <option value="">-- Select Product --</option>
                                 {% for p in products %}
-                                    <option value="{{ p['product_id'] }}">{{ p['name'] }}</option>
+                                <option value="{{ p['product_id'] }}">{{ p['name'] }}</option>
                                 {% endfor %}
                             </select>
-                            <input type="number" name="number[]" placeholder="Quantity" class="px-4 py-2 border rounded-lg focus:outline-none" required>
-                            <input type="number" name="price[]" step="0.01" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none" required>
-                            <button type="button" onclick="addProductRow()" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600">Add another product</button>
+                            <input type="number" name="number[]" placeholder="Quantity"
+                                class="px-4 py-2 border rounded-lg focus:outline-none" required>
+                            <input type="number" name="price[]" step="0.01" placeholder="Price"
+                                class="px-4 py-2 border rounded-lg focus:outline-none" required>
+                            <button type="button" onclick="addProductRow()"
+                                class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600">Add
+                                another product</button>
                         </div>
                     </div>
-            
-                    <button type="submit" class="col-span-1 md:col-span-4 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 mt-4">Create Order</button>
+
+                    <button type="submit"
+                        class="col-span-1 md:col-span-4 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 mt-4">Create
+                        Order</button>
                 </form>
-            
+
                 <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <table id="orders-table" class="min-w-full bg-white rounded-lg shadow-md">
                         <thead>
                             <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                 <th class="py-3 px-6 text-left">ID</th>
@@ -356,18 +430,21 @@
                         </thead>
                         <tbody class="text-gray-600 text-sm font-light">
                             {% for o in orders %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-6">{{ o['order_id'] }}</td>
-                                    <td class="py-3 px-6">{{ o['customer_name'] }}</td>
-                                    <td class="py-3 px-6">{{ o['staff_name'] }}</td>
-                                    <td class="py-3 px-6">{{ o['full_price'] }} VND</td>
-                                    <td class="py-3 px-6">{{ o['created_at'] | strftime }}</td>
-                                    <td class="py-3 px-6 text-center">
-                                        <form method="POST" action="/delete_order/{{ o['order_id'] }}" class="inline-block" onsubmit="return confirm('Delete this order?');">
-                                            <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
+                            <tr class="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
+                                data-order-id="{{ o['order_id'] }}">
+                                <td class="py-3 px-6">{{ o['order_id'] }}</td>
+                                <td class="py-3 px-6">{{ o['customer_name'] }}</td>
+                                <td class="py-3 px-6">{{ o['staff_name'] }}</td>
+                                <td class="py-3 px-6">{{ o['full_price'] }} VND</td>
+                                <td class="py-3 px-6">{{ o['created_at'] | strftime }}</td>
+                                <td class="py-3 px-6 text-center" onclick="event.stopPropagation();">
+                                    <form method="POST" action="/delete_order/{{ o['order_id'] }}" class="inline-block"
+                                        onsubmit="return confirm('Delete this order?');">
+                                        <button type="submit"
+                                            class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -375,5 +452,76 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tableBody = document.querySelector('#orders-table tbody');
+            let lastClickedRow = null;
+            let lastDetailRow = null;
+
+            tableBody.addEventListener('click', async (event) => {
+                let clickedRow = event.target.closest('tr');
+
+                if (clickedRow && clickedRow.classList.contains('detail-row')) {
+                    return;
+                }
+
+                if (event.target.closest('button')) {
+                    return;
+                }
+
+                if (lastDetailRow && lastDetailRow !== clickedRow.nextElementSibling) {
+                    lastDetailRow.remove();
+                }
+
+                if (lastClickedRow === clickedRow) {
+                    if (lastDetailRow) {
+                        lastDetailRow.remove();
+                        lastDetailRow = null;
+                        lastClickedRow = null;
+                    }
+                    return;
+                }
+
+                const orderId = clickedRow.dataset.orderId;
+                if (!orderId) return;
+
+                const response = await fetch(`/api/order_details/${orderId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const products = data.products;
+
+                    let productsHtml = '';
+                    products.forEach(p => {
+                        productsHtml += `
+                            <p><b>Product:</b> ${p.product_name}</p>
+                            <p><b>Quantity:</b> ${p.number}</p>
+                            <p><b>Unit Price:</b> ${p.unit_price} VND</p>
+                            <hr class="my-2" />
+                        `;
+                    });
+
+                    const newDetailRow = document.createElement('tr');
+                    newDetailRow.classList.add('detail-row', 'open', 'bg-gray-50');
+                    newDetailRow.innerHTML = `
+                        <td colspan="6" class="py-4 px-6">
+                            <h4 class="font-bold text-gray-800">Chi tiết đơn hàng ID: ${orderId}</h4>
+                            <div class="mt-2 text-gray-700">
+                                ${productsHtml}
+                            </div>
+                        </td>
+                    `;
+                    
+                    clickedRow.after(newDetailRow);
+                    lastClickedRow = clickedRow;
+                    lastDetailRow = newDetailRow;
+
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        });
+    </script>
 </body>
-</html> 
+
+</html>
