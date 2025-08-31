@@ -149,8 +149,9 @@ def index():
 @app.route('/add_product', methods=["POST"])
 def add_product():
     name = request.form["name"]
+    type = request.form["type"]
     with get_db() as conn:
-        conn.execute("INSERT INTO products (name) VALUES (?)", (name,))
+        conn.execute("INSERT INTO products (name, type) VALUES (?, ?)", (name,type))
         conn.commit()
     return redirect("/")
 
@@ -388,6 +389,11 @@ def delete_order(order_id):
         conn.execute("DELETE FROM orders WHERE order_id = ?", (order_id,))
         conn.commit()
     return redirect("/")
+
+#===Route chuyển trang===#
+@app.route('/import')
+def import_page():
+    return render_template('import.html')
 
 if __name__ == "__main__":
     setup_db()

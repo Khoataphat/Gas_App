@@ -29,7 +29,8 @@
         }
 
         .detail-row.open {
-            max-height: 500px; /* Adjust this value as needed to fit content */
+            max-height: 500px;
+            /* Adjust this value as needed to fit content */
         }
     </style>
 </head>
@@ -82,6 +83,10 @@
                             <span class="ml-2">Order Management</span>
                         </a>
                     </li>
+                    <a href="/import"
+                        class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <span class="ml-2">Nhập Kho</span>
+                    </a>
                 </ul>
             </nav>
         </div>
@@ -511,7 +516,7 @@
                             </div>
                         </td>
                     `;
-                    
+
                     clickedRow.after(newDetailRow);
                     lastClickedRow = clickedRow;
                     lastDetailRow = newDetailRow;
